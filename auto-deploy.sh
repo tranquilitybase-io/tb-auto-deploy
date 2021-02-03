@@ -170,12 +170,27 @@ main (){
 
   ZONE=$(gcloud compute instances list --format "value(ZONE)" --limit=1)
   TF_SERVER_INTERNAL_IP=$(gcloud compute instances describe tf-server-${TB_ID} --zone=${ZONE} --format='get(networkInterfaces[0].networkIP)')
+
+
   # ===== SSH to bastion
   rm /tmp/sshkey
   ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""
-  gcloud compute config-ssh
-  gcloud compute --project "bootstrap-${TB_ID}" ssh tf-server-${TB_ID} --zone ${ZONE} --force-key-file-overwrite 2>/dev/nullrc=$? \ 
-  --command="sudo /opt/tb/repo/tb-gcp-tr/landingZone/tb-welcome"
+
+  (
+    gcloud compute ssh tf-server-${TB_ID} \
+    --zone ${ZONE}  \
+    --ssh-key-file=/tmp/sshkey \
+    -- 'sudo /opt/tb/repo/tb-gcp-tr/landingZone/tb-welcome'
+  )
+  if [ $? != 0 ]
+  then
+    echo "there was an error creating the SSH connection"
+    echo "to complete the terraform steps you will need to shh into 'tf-server-${TB_ID}'"
+    echo "and run this command 'sudo /opt/tb/repo/tb-gcp-tr/landingZone/tb-welcome'"
+    echo ""
+    echo "Make sure you are using the correct gcloud account and that you have authenticated by running 'gcloud auth login'"
+  fi
+
 }
 
 echo ""
