@@ -119,7 +119,19 @@ main (){
   if [[ -z ${REPO_BRANCH} ]]; then
     REPO_BRANCH="master"
   fi
+
+
+  # ==== verify branch exists
+  in_remote=$(git ls-remote --heads origin ${REPO_BRANCH})
+  if [[ -z $in_remote ]]; then
+    echo "branch does not exist on remote, exiting."
+    exit 1
+  else
+    echo "branch exists"
+  fi
+
   git checkout ${REPO_BRANCH}
+
 
   # ===== Allocate rnd_id
   RND_ID="$(tr -dc 'a-z0-9' < /dev/urandom | fold -w 8 | sed '/^[0-9]*$/d' | head -n 1)"
