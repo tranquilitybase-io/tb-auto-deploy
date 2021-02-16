@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "== Creating the LZ deployment == "
 echo ""
@@ -146,26 +147,26 @@ main (){
 
   # ===== GCP bootstrap setup
   if [[ ${NO_LABELS} -eq 1 && -z ${ORG_ID} ]]; then
-
     tb-marketplace/tb-config-creator/tb-config-creator -r ${TB_ID} -f $PARENT_FOLDER_ID -b $BILLING_ID -nl
 
   elif [[ ${NO_LABELS} -eq 0 && -z ${PARENT_FOLDER_ID} ]]; then
-
     tb-marketplace/tb-config-creator/tb-config-creator -r ${TB_ID} -o $ORG_ID -b $BILLING_ID -l ${LABELS}
   
   elif [[ ${NO_LABELS} -eq 1 && -n ${ORG_ID} ]]; then
-  
     tb-marketplace/tb-config-creator/tb-config-creator -r ${TB_ID} -o $ORG_ID -b $BILLING_ID -nl
-  
-  else 
-    
+
+  else
     tb-marketplace/tb-config-creator/tb-config-creator -r ${TB_ID} -f $PARENT_FOLDER_ID -b $BILLING_ID -l ${LABELS}
 
   fi
 
 
-  # ==== Get generated folder ID 
-  export TB_FOLDER_ID=$(gcloud resource-manager folders list --folder=${PARENT_FOLDER_ID} --filter displayName:"${TB_ID}" --format='value(ID)')
+  # ==== Get generated folder ID
+  if [[ -z ${ORG_ID} ]]; then
+    export TB_FOLDER_ID=$(gcloud resource-manager folders list --folder=${PARENT_FOLDER_ID} --filter displayName:"${TB_ID}" --format='value(ID)')
+  else
+    export TB_FOLDER_ID=$(gcloud resource-manager folders list --organization="${ORG_ID}" --filter displayName:"${TB_ID}" --format='value(ID)')
+  fi
   echo "Generated folder id: ${TB_FOLDER_ID}"
 
   # ==== Run deployment manager
