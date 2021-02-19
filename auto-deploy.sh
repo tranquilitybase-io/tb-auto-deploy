@@ -186,9 +186,8 @@ main (){
 
 
   # ===== SSH to bastion
-  rm /tmp/sshkey
-  ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""
 
+  ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""
   (
     gcloud compute ssh tf-server-${TB_ID} \
     --zone ${ZONE}  \
@@ -204,6 +203,7 @@ main (){
     echo "Make sure you are using the correct gcloud account and that you have authenticated by running 'gcloud auth login'"
   fi
 
+  rm /tmp/sshkey
 }
 
 echo ""
